@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2020",                   // Set the JavaScript version
+    "module": "commonjs",                 // Use CommonJS module system
+    "lib": ["es2020"],                    // Include library files for ES2020
+    "strict": true,                       // Enable all strict type-checking options
+    "esModuleInterop": true,              // Allow default imports from modules with no default exports
+    "skipLibCheck": true,                 // Skip type checking of all declaration files
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
+    "moduleResolution": "node",           // Resolve modules using Node.js's strategy
+    "resolveJsonModule": true,            // Include modules imported from .json files
+    "outDir": "./dist"                    // Redirect output structure to the directory
+  },
+  "include": [
+    "solutions/**/*"                           // Include all files in the src folder
+  ],
+  "exclude": [
+    "node_modules",                      // Exclude the node_modules folder
+    "**/*.test.ts"                       // Exclude test files
+  ]
+}
