@@ -52,12 +52,12 @@ const parseGameData = (input: string): Game => {
   };
 };
 
-const isGamePossible = (game: Game) =>
-  game.rounds.every(
-    (round) => round.blue <= 14 && round.green <= 13 && round.red <= 12
-  );
-
 const part1 = () => {
+  const isGamePossible = (game: Game) =>
+    game.rounds.every(
+      (round) => round.blue <= 14 && round.green <= 13 && round.red <= 12
+    );
+
   const games = input.map(parseGameData);
 
   const impossibleGames = games.filter(isGamePossible);
@@ -67,4 +67,32 @@ const part1 = () => {
   return sumOfImpossibleGameIds;
 };
 
-console.log(part1());
+const part2 = () => {
+  const getMinimumCubeCountsForGame = (game: Game) => {
+    return {
+      red: game.rounds.reduce((p, c) => {
+        if (p < c.red) {
+          return c.red;
+        }
+        return p;
+      }, 0),
+      green: game.rounds.reduce((p, c) => {
+        if (p < c.green) {
+          return c.green;
+        }
+        return p;
+      }, 0),
+      blue: game.rounds.reduce((p, c) => {
+        if (p < c.blue) {
+          return c.blue;
+        }
+        return p;
+      }, 0),
+    } as const;
+  };
+
+  return input
+    .map(parseGameData)
+    .map(getMinimumCubeCountsForGame)
+    .reduce((p, c) => p + c.blue * c.green * c.red, 0);
+};
