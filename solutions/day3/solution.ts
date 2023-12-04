@@ -27,7 +27,6 @@ const { input, WIDTH, HEIGHT } = getInput(false);
 const getNumberPositions = (engine: string) => {
   const numberPositions: Array<{ value: string; index: number }> = [];
 
-  // let regex = /\d+/g;
   let regex = /\b\d{1,3}\b/g;
   let match;
   while ((match = regex.exec(engine))) {
@@ -115,4 +114,47 @@ const part1 = () => {
   console.log(sum);
 };
 
+const part2 = () => {
+  const onlyUnique = (value: number, index: number, array: Array<number>) =>
+    array.indexOf(value) === index;
+
+  const gearPositions: { [key: number]: Array<number> } = {};
+  const validEngineParts = getNumberPositions(input);
+
+  [...input.matchAll(/\*/g)].forEach((gear) => {
+    const index = gear.index ?? 0;
+
+    gearPositions[index] = [];
+
+    for (let i = -1; i < 2; ++i) {
+      for (let j = -1; j < 2; ++j) {
+        const checkIndex = index + WIDTH * i + j;
+        validEngineParts.forEach((enginePart) => {
+          if (
+            enginePart.index <= checkIndex &&
+            checkIndex <= enginePart.index + enginePart.value.length - 1
+          ) {
+            gearPositions[index].push(Number(enginePart.value));
+          }
+        });
+      }
+    }
+    gearPositions[index] = gearPositions[index].filter(onlyUnique);
+
+    if (gearPositions[index].length !== 2) {
+      delete gearPositions[index];
+    }
+  });
+
+  const sumOfGearRatios = Object.values(gearPositions).reduce(
+    (p, c) => p + c[0] * c[1],
+    0
+  );
+
+  console.log(gearPositions);
+
+  console.log(sumOfGearRatios);
+};
+
 part1();
+part2();
