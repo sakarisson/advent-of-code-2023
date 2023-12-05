@@ -15,9 +15,10 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11`;
   return input;
 };
 
-const input = getInput(false);
+const input = getInput(true);
 
 type Card = {
+  id: number;
   yours: Array<number>;
   winning: Array<number>;
 };
@@ -26,31 +27,29 @@ const getFormattedData = (): Array<Card> =>
   input
     .split("\n")
     .map((str) => str.split(" | "))
-    .map((cards) => {
+    .map((cards, i) => {
       const [unformattedWinningCardsStr, yourCardsStr] = cards;
       const [, winningCardsStr] = unformattedWinningCardsStr.split(": ");
       return {
+        id: i,
         winning: winningCardsStr.split(" ").map(Number).filter(Boolean),
         yours: yourCardsStr.split(" ").map(Number).filter(Boolean),
       };
     });
 
-const getPrizeOfCard = (card: Card) => {
-  const matches = card.winning
+const getNumberOfMatchesOnCard = (card: Card) =>
+  card.winning
     .map((num) => card.yours.find((other) => other === num))
-    .filter(Boolean);
+    .filter(Boolean).length;
 
-  const test = card.winning
-    .map((num) =>
-      card.yours.find((other) => (other === num ? [num, other] : false))
-    )
-    .filter(Boolean);
+const getPrizeOfCard = (card: Card) => {
+  const matchCount = getNumberOfMatchesOnCard(card);
 
-  if (matches.length === 0) {
+  if (matchCount === 0) {
     return 0;
   }
 
-  return Math.pow(2, matches.length - 1);
+  return Math.pow(2, matchCount - 1);
 };
 
 const part1 = () => {
@@ -61,4 +60,32 @@ const part1 = () => {
   console.log(points);
 };
 
-part1();
+// part1();
+const part2 = () => {
+  const cards = getFormattedData();
+
+  const winnings: { [key: number]: number } = {};
+
+  let i = 0;
+  while (i < cards.length) {
+    const matches = getNumberOfMatchesOnCard(cards[i]);
+    winnings[i] = matches;
+    i += 1;
+  }
+
+  const entries = Object.entries(winnings);
+
+  let count = entries.length;
+
+  entries.forEach((result) => {
+    const [id, matches] = result;
+
+    for (let i = 0; i < matches; i += 1) {
+      count += winnings[Number(id) + i];
+    }
+  });
+
+  console.log(count);
+};
+
+part2();
