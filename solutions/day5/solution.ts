@@ -114,3 +114,27 @@ const convertInput = (): ConvertedInput => {
 };
 
 const data = convertInput();
+
+const test = data.seeds
+  .map((seed) => {
+    const temp = data.maps[0].ranges
+      .map((range) => {
+        if (
+          range.sourceRangeStart <= seed &&
+          range.sourceRangeStart + range.rangeLength - 1
+        ) {
+          const diff = seed - range.sourceRangeStart;
+
+          return range.destinationRangeStart + diff;
+        }
+      })
+      .filter(Boolean);
+
+    if (temp.length === 0) {
+      return [seed];
+    }
+    return temp;
+  })
+  .flat();
+
+console.log(test);
