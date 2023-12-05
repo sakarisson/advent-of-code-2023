@@ -70,8 +70,8 @@ type ConvertedInput = {
   maps: Array<Map>;
 };
 
-const convertInput = (): ConvertedInput => {
-  const lines = getInput({ test: true }).split("\n").filter(Boolean);
+const convertInput = (test: boolean): ConvertedInput => {
+  const lines = getInput({ test }).split("\n").filter(Boolean);
 
   const seeds = lines[0].replace("seeds: ", "").split(" ").map(Number);
 
@@ -113,28 +113,34 @@ const convertInput = (): ConvertedInput => {
   return { seeds, maps };
 };
 
-const data = convertInput();
+const getNextValues = (seeds: Array<number>, ranges: Array<Range>) =>
+  seeds.map((seed) => {
+    const possibleRanges = ranges.filter(
+      (range) =>
+        range.sourceRangeStart <= seed &&
+        seed <= range.sourceRangeStart + range.rangeLength
+    );
+    const getResult = () => {
+      if (possibleRanges.length === 0) {
+        return seed;
+      }
 
-const test = data.seeds
-  .map((seed) => {
-    const temp = data.maps[0].ranges
-      .map((range) => {
-        if (
-          range.sourceRangeStart <= seed &&
-          range.sourceRangeStart + range.rangeLength - 1
-        ) {
-          const diff = seed - range.sourceRangeStart;
+      const diff = seed - possibleRanges[0].sourceRangeStart;
+      return possibleRanges[0].destinationRangeStart + diff;
+    };
+    const result = getResult();
+    return result;
+  });
 
-          return range.destinationRangeStart + diff;
-        }
-      })
-      .filter(Boolean);
+const part1 = () => {
+  const data = convertInput(false);
 
-    if (temp.length === 0) {
-      return [seed];
-    }
-    return temp;
-  })
-  .flat();
+  let values = data.seeds;
+  for (let i = 0; i < mapTypes.length; i += 1) {
+    values = getNextValues(values, data.maps[i].ranges);
+  }
 
-console.log(test);
+  console.log(Math.min(...values));
+};
+
+part1();
