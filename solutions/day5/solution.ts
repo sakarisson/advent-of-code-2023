@@ -155,13 +155,13 @@ const part2 = () => {
   const data = convertInput(false);
 
   const recursivelyGetFinalValue = (current: number, map: Map): number => {
-    const cachedDistance = distanceCache[map.type][current];
+    // const cachedDistance = distanceCache[map.type][current];
 
-    if (cachedDistance) {
-      return cachedDistance;
-    }
+    // if (cachedDistance) {
+    //   return cachedDistance;
+    // }
     const value = getNextValue(current, map.ranges);
-    distanceCache[map.type][current] = value;
+    // distanceCache[map.type][current] = value;
 
     const nextIndex = map.nextMapIndex;
     if (nextIndex === null) {
@@ -172,7 +172,7 @@ const part2 = () => {
 
   let lowest = Infinity;
 
-  for (let i = 0; i < 2; i += 2) {
+  for (let i = 0; i < data.seeds.length; i += 2) {
     for (let j = data.seeds[i]; j < data.seeds[i] + data.seeds[i + 1]; j += 1) {
       const value = recursivelyGetFinalValue(j, data.maps[0]);
       if (value < lowest) {
@@ -181,7 +181,6 @@ const part2 = () => {
     }
   }
 
-  console.log(distanceCache);
   console.log(lowest);
 };
 
