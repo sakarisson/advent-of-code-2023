@@ -63,6 +63,7 @@ type Range = {
 type Map = {
   type: MapType;
   ranges: Array<Range>;
+  nextMapIndex: number | null;
 };
 
 type ConvertedInput = {
@@ -87,6 +88,7 @@ const convertInput = (test: boolean): ConvertedInput => {
         currentMap = {
           type: mapTypes[j],
           ranges: [],
+          nextMapIndex: j < mapTypes.length - 1 ? j + 1 : null,
         };
         break;
       }
@@ -113,34 +115,75 @@ const convertInput = (test: boolean): ConvertedInput => {
   return { seeds, maps };
 };
 
-const getNextValues = (seeds: Array<number>, ranges: Array<Range>) =>
-  seeds.map((seed) => {
-    const possibleRanges = ranges.filter(
-      (range) =>
-        range.sourceRangeStart <= seed &&
-        seed <= range.sourceRangeStart + range.rangeLength
-    );
-    const getResult = () => {
-      if (possibleRanges.length === 0) {
-        return seed;
-      }
+const getNextValue = (seed: number, ranges: Array<Range>) => {
+  const possibleRanges = ranges.filter(
+    (range) =>
+      range.sourceRangeStart <= seed &&
+      seed <= range.sourceRangeStart + range.rangeLength
+  );
+  const getResult = () => {
+    if (possibleRanges.length === 0) {
+      return seed;
+    }
 
-      const diff = seed - possibleRanges[0].sourceRangeStart;
-      return possibleRanges[0].destinationRangeStart + diff;
-    };
-    const result = getResult();
-    return result;
-  });
+    const diff = seed - possibleRanges[0].sourceRangeStart;
+    return possibleRanges[0].destinationRangeStart + diff;
+  };
+  const result = getResult();
+  return result;
+};
 
 const part1 = () => {
   const data = convertInput(false);
 
   let values = data.seeds;
   for (let i = 0; i < mapTypes.length; i += 1) {
-    values = getNextValues(values, data.maps[i].ranges);
+    values = values.map((value) => getNextValue(value, data.maps[i].ranges));
   }
-
-  console.log(Math.min(...values));
 };
 
-part1();
+const part2 = () => {
+  const distanceCache: { [key in MapType]: { [key: number]: number } } = {
+    "seed-to-soil": {},
+    "fertilizer-to-water": {},
+    "humidity-to-location": {},
+    "light-to-temperature": {},
+    "soil-to-fertilizer": {},
+    "temperature-to-humidity": {},
+    "water-to-light": {},
+  };
+  const data = convertInput(false);
+
+  const recursivelyGetFinalValue = (current: number, map: Map): number => {
+    const cachedDistance = distanceCache[map.type][current];
+
+    if (cachedDistance) {
+      return cachedDistance;
+    }
+    const value = getNextValue(current, map.ranges);
+    distanceCache[map.type][current] = value;
+
+    const nextIndex = map.nextMapIndex;
+    if (nextIndex === null) {
+      return value;
+    }
+    return recursivelyGetFinalValue(value, data.maps[nextIndex]);
+  };
+
+  let lowest = Infinity;
+
+  for (let i = 0; i < 2; i += 2) {
+    for (let j = data.seeds[i]; j < data.seeds[i] + data.seeds[i + 1]; j += 1) {
+      const value = recursivelyGetFinalValue(j, data.maps[0]);
+      if (value < lowest) {
+        lowest = value;
+      }
+    }
+  }
+
+  console.log(distanceCache);
+  console.log(lowest);
+};
+
+// part1();
+part2();
