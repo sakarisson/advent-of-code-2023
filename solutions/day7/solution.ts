@@ -18,16 +18,16 @@ const cardRanks = {
   A: 0,
   K: 1,
   Q: 2,
-  J: 3,
-  T: 4,
-  "9": 5,
-  "8": 6,
-  "7": 7,
-  "6": 8,
-  "5": 9,
-  "4": 10,
-  "3": 11,
-  "2": 12,
+  T: 3,
+  "9": 4,
+  "8": 5,
+  "7": 6,
+  "6": 7,
+  "5": 8,
+  "4": 9,
+  "3": 10,
+  "2": 11,
+  J: 12,
 } as const;
 
 type CardFace = keyof typeof cardRanks;
@@ -48,10 +48,37 @@ const groupCards = (cards: Array<CardFace>) => {
       groups[groupIndex].count += 1;
     }
   });
-  return groups;
+  return groups.sort((a, b) => {
+    if (a.value === "J") {
+      return 1;
+    }
+    if (b.value === "J") {
+      return -1;
+    }
+    return b.count - a.count;
+  });
 };
 
 type GroupedCards = ReturnType<typeof groupCards>;
+
+const updateJacks = (cardGroups: GroupedCards) => {
+  const hasJacks = cardGroups[cardGroups.length - 1].value === "J";
+
+  if (!hasJacks) {
+    return cardGroups;
+  }
+
+  if (cardGroups.length === 1) {
+    return [{ value: "A", count: 5 }];
+  }
+
+  const copy = [...cardGroups];
+
+  copy[0].count += copy[copy.length - 1].count;
+  copy.pop();
+
+  return copy;
+};
 
 const isFiveOfAKind = (cardGroups: GroupedCards) => cardGroups.length === 1;
 
@@ -76,22 +103,24 @@ const isOnePair = (cardGroups: GroupedCards) => cardGroups.length === 4;
 
 const getHandStrength = (hand: Array<CardFace>) => {
   const grouped = groupCards(hand);
-  if (isFiveOfAKind(grouped)) {
+  const reRanked = updateJacks(grouped);
+
+  if (isFiveOfAKind(reRanked)) {
     return 7;
   }
-  if (isFourOfAKind(grouped)) {
+  if (isFourOfAKind(reRanked)) {
     return 6;
   }
-  if (isFullHouse(grouped)) {
+  if (isFullHouse(reRanked)) {
     return 5;
   }
-  if (isThreeOfAKind(grouped)) {
+  if (isThreeOfAKind(reRanked)) {
     return 4;
   }
-  if (isTwoPair(grouped)) {
+  if (isTwoPair(reRanked)) {
     return 3;
   }
-  if (isOnePair(grouped)) {
+  if (isOnePair(reRanked)) {
     return 2;
   }
   return 1;
@@ -142,6 +171,7 @@ const part1 = () => {
     .map((hand, i) => hand.bid * (i + 1))
     .reduce((p, c) => p + c, 0);
 
+  console.log(getHands().sort(sortHands));
   console.log(result);
 };
 
